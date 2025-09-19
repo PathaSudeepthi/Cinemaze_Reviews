@@ -1,4 +1,4 @@
-const tmdbKey = "YOUR_TMDB_API_KEY";     // Replace with your TMDB API key
+const tmdbKey = "76a4cba9c234c9ab2969b6e94766b02d";     //If anyone use this code you need to replace with your TMDB API key
 const tmdbBase = "https://api.themoviedb.org/3";
 let movies = [];
 let currentPage = 1;
