@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinemaze</title>
+  <!-- Link CSS -->
+  <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="left-nav">
+        <h1>🎬 Cinemaze</h1>
+      </div>
+      <div class="right-nav">
+        <a href="#" onclick="goHome()">Movies</a>
+        <a href="#" onclick="showSection('reviewsSection')">Reviews</a>
+        <a href="#" onclick="showSection('favoritesSection')">Favorites</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search for a movie...">
+    <button onclick="searchMovie()">Search</button>
+  </div>
+
+  <!-- Movies Section -->
+  <section id="moviesSection" class="section">
+    <div class="movies" id="movieList"></div>
+    <div id="pagination" style="text-align:center; margin:20px;"></div>
+  </section>
+
+  <!-- Reviews Section -->
+  <section id="reviewsSection" class="section" style="display:none; text-align:center; padding:20px;">
+    <h2>⭐ My Reviews</h2>
+    <div id="reviewsList"></div>
+  </section>
+
+  <!-- Favorites Section -->
+  <section id="favoritesSection" class="section" style="display:none; text-align:center; padding:20px;">
+    <h2>❤️ My Favorites</h2>
+    <div id="favoritesList"></div>
+  </section>
+
+  <!-- Link JS -->
+  <script src="script2.js"></script>
+</body>
+</html>
