@@ -31,3 +31,7 @@ Technologies Used:
 Purpose:
 
 Cinemaze Reviews is designed for movie enthusiasts and learners who want to keep track of movies they love. 
+
+## Website Screenshot
+
+![Cinemaze Reviews Screenshot] (<img width="1896" height="909" alt="image" src="https://github.com/user-attachments/assets/bd172990-ea1e-4081-b34b-c9f5c47a7d57" />)
