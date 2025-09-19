@@ -36,8 +36,12 @@ Cinemaze Reviews is designed for movie enthusiasts and learners who want to keep
 ## Website Screenshot
 
 Cinemaze Reviews Screenshot 
-Movies or Home Page (<img width="1896" height="909" alt="image" src="https://github.com/user-attachments/assets/bd172990-ea1e-4081-b34b-c9f5c47a7d57" />)
-By Searching the Movie (<img width="1900" height="913" alt="image" src="https://github.com/user-attachments/assets/0a37b0d1-de56-49c0-b1e4-96d79c0e0bf5" />) 
-Reviews Page (<img width="1919" height="909" alt="image" src="https://github.com/user-attachments/assets/022cc5ff-1e25-456f-b096-9b2664c5d6f1" />)
-Favorites page (<img width="1918" height="907" alt="image" src="https://github.com/user-attachments/assets/d2b95b36-dcc7-4f25-9fc9-b039879c683a" />)
+#Movies or Home Page 
+<img width="1896" height="909" alt="image" src="https://github.com/user-attachments/assets/bd172990-ea1e-4081-b34b-c9f5c47a7d57" />
+#By Searching the Movie 
+<img width="1900" height="913" alt="image" src="https://github.com/user-attachments/assets/0a37b0d1-de56-49c0-b1e4-96d79c0e0bf5" />
+#Reviews Page 
+<img width="1919" height="909" alt="image" src="https://github.com/user-attachments/assets/022cc5ff-1e25-456f-b096-9b2664c5d6f1" />
+#Favorites page 
+<img width="1918" height="907" alt="image" src="https://github.com/user-attachments/assets/d2b95b36-dcc7-4f25-9fc9-b039879c683a" />
 
