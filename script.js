@@ -1,8 +1,10 @@
-const tmdbKey = "76a4cba9c234c9ab2969b6e94766b02d";   //If anyone use this code you need to replace with your TMDB API key
+const tmdbKey = "76a4cba9c234c9ab2969b6e94766b02d";   // Replace with your TMDB API key
 const tmdbBase = "https://api.themoviedb.org/3";
 let movies = [];
 let currentPage = 1;
 let totalPages = 1;
+
+const api = "http://localhost:5000/reviews";   // << Node.js backend
 
 // Show Sections
 function showSection(sectionId) {
@@ -120,7 +122,7 @@ function displayMovies(movieArray) {
       </p>
       <div class="rating">
         <label>⭐ Rate: </label>
-        <select onchange="saveRating('${movie.id}', this.value)">
+        <select onchange="saveComment('${movie.id}','${movie.title}','${poster}', this.value)">
           <option value="">Select</option>
           ${[1,2,3,4,5,6,7,8,9,10].map(r => `<option value="${r}">${r}</option>`).join("")}
         </select>
@@ -133,11 +135,6 @@ function displayMovies(movieArray) {
     `;
 
     movieList.appendChild(card);
-
-    const storedRating = localStorage.getItem(movie.id + "-rating");
-    const storedComment = localStorage.getItem(movie.id + "-comment");
-    if (storedRating) card.querySelector("select").value = storedRating;
-    if (storedComment) card.querySelector("textarea").value = JSON.parse(storedComment).comment;
   });
 }
 
@@ -146,98 +143,80 @@ function showAllMovies() {
   displayMovies(movies);
 }
 
-// Ratings
-function saveRating(id, value) {
-  localStorage.setItem(id + "-rating", value);
-}
+// Save comment + rating to backend
+async function saveComment(id, title, poster, rating = null) {
 
-// Comments
-function saveComment(id, title, poster) {
   const commentBox = document.getElementById("comment-" + id);
-  const comment = commentBox.value.trim();
+  const comment = commentBox ? commentBox.value.trim() : "";
 
-  if (!comment) {
-    alert("Please write something before saving!");
+  if (!comment && !rating) {
+    alert("Please write a comment or select a rating!");
     return;
   }
 
-  localStorage.setItem(id + "-comment", JSON.stringify({ title, comment, poster }));
-  alert("Review saved!");
-  loadReviews();
-}
+  try {
 
-function deleteComment(id) {
-  localStorage.removeItem(id + "-comment");
-  localStorage.removeItem(id + "-rating");
-  alert("Review deleted!");
-  loadReviews();
-}
+    const res = await fetch("http://localhost:5000/reviews", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title,
+        comment,
+        rating
+      })
+    });
 
-// Reviews
-function loadReviews() {
-  const reviewsList = document.getElementById("reviewsList");
-  reviewsList.innerHTML = "";
+    const data = await res.json();
 
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.endsWith("-comment")) {
-      const stored = JSON.parse(localStorage.getItem(key));
-      if (stored && stored.comment) {
-        const movieId = key.replace("-comment", "");
-        const rating = localStorage.getItem(movieId + "-rating");
-        const ratingStars = rating ? getStars(rating) : "No rating";
-
-        const div = document.createElement("div");
-        div.style.display = "inline-block";
-        div.style.margin = "10px";
-        div.style.textAlign = "center";
-        div.style.width = "180px";
-        div.style.background = "rgba(0,0,0,0.6)";
-        div.style.padding = "10px";
-        div.style.borderRadius = "8px";
-
-        div.innerHTML = `
-          <img src="${stored.poster}" style="width:150px; border-radius:8px;"><br>
-          <b>${stored.title}</b><br>
-          <div style="color: gold; font-size: 1.2rem;">${ratingStars}</div>
-          <p>${stored.comment}</p>
-          <div class="review-buttons">
-            <button onclick="scrollToMovie('${movieId}')">Go to Movies</button>
-            <button onclick="deleteComment('${movieId}')">Delete</button>
-          </div>
-        `;
-        reviewsList.appendChild(div);
-      }
+    if (data.success) {
+      alert("Review saved!");
+      loadReviews();   // reload all reviews
     }
+
+  } catch (err) {
+    console.error("Error saving review:", err);
   }
-}
 
-function goHome() {
-  currentPage = 1;
-  document.getElementById("searchInput").value = "";
-  showSection('moviesSection');
-  loadMovies(1);
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
+// Load reviews from backend
+async function loadReviews() {
 
-function scrollToMovie(movieId) {
-  showSection('moviesSection');
-  const movieElement = document.getElementById("movie-" + movieId);
-  if (movieElement) {
-    movieElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    movieElement.style.border = "2px solid gold";
-    setTimeout(() => movieElement.style.border = "", 2000);
+  try {
+
+    const res = await fetch("http://localhost:5000/reviews");
+    const reviews = await res.json();
+
+    const reviewsList = document.getElementById("reviewsList");
+    reviewsList.innerHTML = "";
+
+    if (reviews.length === 0) {
+      reviewsList.innerHTML = "<p>No reviews yet.</p>";
+      return;
+    }
+
+    reviews.reverse().forEach(r => {
+
+      const stars = r.rating ? "⭐".repeat(r.rating) : "";
+
+      const div = document.createElement("div");
+
+      div.innerHTML = `
+        <h3>${r.title}</h3>
+        <p>${stars}</p>
+        <p>${r.comment}</p>
+      `;
+
+      reviewsList.appendChild(div);
+
+    });
+
+  } catch (err) {
+    console.error("Error loading reviews:", err);
   }
-}
 
-// Stars
-function getStars(rating) {
-  const stars = Math.round(rating / 2);
-  const filled = "★".repeat(stars);
-  const empty = "☆".repeat(5 - stars);
-  return filled + empty;
 }
-
 // Favorites
 function toggleFavorite(id, title, poster) {
   const favKey = id + "-favorite";
@@ -281,5 +260,16 @@ function loadFavorites() {
       `;
       favoritesList.appendChild(div);
     }
+  }
+}
+
+// Scroll helper
+function scrollToMovie(movieId) {
+  showSection('moviesSection');
+  const movieElement = document.getElementById("movie-" + movieId);
+  if (movieElement) {
+    movieElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    movieElement.style.border = "2px solid gold";
+    setTimeout(() => movieElement.style.border = "", 2000);
   }
 }
