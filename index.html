@@ -27,21 +27,24 @@
   </div>
 
   <!-- Movies Section -->
-  <section id="moviesSection" class="section">
+  <section id="moviesSection" class="section" style="display:none;">
     <div class="movies" id="movieList"></div>
     <div id="pagination" style="text-align:center; margin:20px;"></div>
+    <button onclick="showSection('moviesSection')">Movies</button>
   </section>
 
   <!-- Reviews Section -->
   <section id="reviewsSection" class="section" style="display:none; text-align:center; padding:20px;">
     <h2>⭐ My Reviews</h2>
     <div id="reviewsList"></div>
+    <button onclick="removeReview('${movieId}')">Delete</button>
   </section>
 
   <!-- Favorites Section -->
   <section id="favoritesSection" class="section" style="display:none; text-align:center; padding:20px;">
     <h2>❤️ My Favorites</h2>
     <div id="favoritesList"></div>
+    <button onclick="removeFavorite('${movieId}')">Delete</button>
   </section>
 
   <!-- Link JS -->
