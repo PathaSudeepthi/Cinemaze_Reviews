@@ -15,7 +15,7 @@ function showSection(sectionId) {
   if (sectionId === "reviewsSection") loadReviews();
   if (sectionId === "favoritesSection") loadFavorites();
 }
-
+ 
 // Load Movies
 async function loadMovies(page = 1) {
   try {
