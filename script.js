@@ -72,7 +72,7 @@ function goToPage(page) {
 
 window.onload = () => {
   showSection('moviesSection'); // show movies section by default
-  loadMovies();                 // load all movies
+  loadMovies(1);                 // load all movies
 };
 async function searchMovie() {
   const query = document.getElementById("searchInput").value.trim();
