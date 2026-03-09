@@ -71,9 +71,9 @@ function goToPage(page) {
 }
 
 window.onload = () => {
-  loadMovies();
+  showSection('moviesSection'); // show movies section by default
+  loadMovies();                 // load all movies
 };
-
 async function searchMovie() {
   const query = document.getElementById("searchInput").value.trim();
 
