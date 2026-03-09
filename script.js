@@ -145,7 +145,6 @@ function showAllMovies() {
 
 // Save comment + rating to backend
 async function saveComment(id, title, poster, rating = null) {
-
   const commentBox = document.getElementById("comment-" + id);
   const comment = commentBox ? commentBox.value.trim() : "";
 
@@ -155,68 +154,42 @@ async function saveComment(id, title, poster, rating = null) {
   }
 
   try {
-
-    const res = await fetch("http://localhost:5000/reviews", {
+    await fetch(api, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        title,
-        comment,
-        rating
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, comment, rating })
     });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert("Review saved!");
-      loadReviews();   // reload all reviews
-    }
-
+    alert("Review saved!");
+    loadReviews();
   } catch (err) {
     console.error("Error saving review:", err);
+    alert("Failed to save review.");
   }
-
 }
+
 // Load reviews from backend
 async function loadReviews() {
-
   try {
-
-    const res = await fetch("http://localhost:5000/reviews");
+    const res = await fetch(api);
     const reviews = await res.json();
-
     const reviewsList = document.getElementById("reviewsList");
     reviewsList.innerHTML = "";
 
-    if (reviews.length === 0) {
-      reviewsList.innerHTML = "<p>No reviews yet.</p>";
-      return;
-    }
-
-    reviews.reverse().forEach(r => {
-
-      const stars = r.rating ? "⭐".repeat(r.rating) : "";
-
+    reviews.forEach(r => {
+      const ratingStars = r.rating ? "⭐".repeat(r.rating) : "No rating";
       const div = document.createElement("div");
-
       div.innerHTML = `
         <h3>${r.title}</h3>
-        <p>${stars}</p>
+        <p>${ratingStars}</p>
         <p>${r.comment}</p>
       `;
-
       reviewsList.appendChild(div);
-
     });
-
   } catch (err) {
     console.error("Error loading reviews:", err);
   }
-
 }
+
 // Favorites
 function toggleFavorite(id, title, poster) {
   const favKey = id + "-favorite";
