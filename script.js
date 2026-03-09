@@ -1,12 +1,7 @@
-const tmdbKey = "76a4cba9c234c9ab2969b6e94766b02d";   // Replace with your TMDB API key
+const tmdbKey = "76a4cba9c234c9ab2969b6e94766b02d";
 const tmdbBase = "https://api.themoviedb.org/3";
 let movies = [];
-let currentPage = 1;
-let totalPages = 1;
 
-const api = "http://localhost:5000/reviews";   // << Node.js backend
-
-// Show Sections
 function showSection(sectionId) {
   document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
   document.getElementById(sectionId).style.display = "block";
@@ -15,12 +10,15 @@ function showSection(sectionId) {
   if (sectionId === "reviewsSection") loadReviews();
   if (sectionId === "favoritesSection") loadFavorites();
 }
- 
-// Load Movies
+
+let currentPage = 1;
+let totalPages = 1;
+
 async function loadMovies(page = 1) {
   try {
     const languages = ["te", "hi", "en", "ta", "kn", "ml"];
     let allMovies = [];
+
     const todayDateStr = new Date().toISOString().split("T")[0];
 
     for (const lang of languages) {
@@ -33,6 +31,7 @@ async function loadMovies(page = 1) {
     }
 
     movies = Array.from(new Map(allMovies.map(m => [m.id, m])).values());
+
     displayMovies(movies);
     renderPagination();
   } catch (err) {
@@ -43,6 +42,7 @@ async function loadMovies(page = 1) {
 function renderPagination() {
   const paginationDiv = document.getElementById("pagination");
   paginationDiv.innerHTML = "";
+
   let html = "";
 
   if (currentPage > 1) {
@@ -74,9 +74,9 @@ window.onload = () => {
   loadMovies();
 };
 
-// Search
 async function searchMovie() {
   const query = document.getElementById("searchInput").value.trim();
+
   if (!query) {
     showAllMovies();
     return;
@@ -89,7 +89,6 @@ async function searchMovie() {
   displayMovies(data.results || []);
 }
 
-// Render Movies
 function displayMovies(movieArray) {
   const movieList = document.getElementById("movieList");
   movieList.innerHTML = "";
@@ -108,10 +107,10 @@ function displayMovies(movieArray) {
       ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
       : "https://www.movienewz.com/img/films/poster-holder.jpg";
 
-    const description = movie.overview
-      ? movie.overview.length > 200
-        ? movie.overview.slice(0, 200) + "..."
-        : movie.overview
+    const description = movie.overview 
+      ? movie.overview.length > 200 
+        ? movie.overview.slice(0, 200) + "..." 
+        : movie.overview 
       : "No description available.";
 
     card.innerHTML = `
@@ -122,7 +121,7 @@ function displayMovies(movieArray) {
       </p>
       <div class="rating">
         <label>⭐ Rate: </label>
-        <select onchange="saveComment('${movie.id}','${movie.title}','${poster}', this.value)">
+        <select onchange="saveRating('${movie.id}', this.value)">
           <option value="">Select</option>
           ${[1,2,3,4,5,6,7,8,9,10].map(r => `<option value="${r}">${r}</option>`).join("")}
         </select>
@@ -135,6 +134,12 @@ function displayMovies(movieArray) {
     `;
 
     movieList.appendChild(card);
+
+    const storedRating = localStorage.getItem(movie.id + "-rating");
+    const storedComment = localStorage.getItem(movie.id + "-comment");
+
+    if (storedRating) card.querySelector("select").value = storedRating;
+    if (storedComment) card.querySelector("textarea").value = JSON.parse(storedComment).comment;
   });
 }
 
@@ -143,54 +148,101 @@ function showAllMovies() {
   displayMovies(movies);
 }
 
-// Save comment + rating to backend
-async function saveComment(id, title, poster, rating = null) {
-  const commentBox = document.getElementById("comment-" + id);
-  const comment = commentBox ? commentBox.value.trim() : "";
+function saveRating(id, value) {
+  localStorage.setItem(id + "-rating", value);
+}
 
-  if (!comment && !rating) {
-    alert("Please write a comment or select a rating!");
+function saveComment(id, title, poster) {
+  const commentBox = document.getElementById("comment-" + id);
+  const comment = commentBox.value.trim();
+
+  if (!comment) {
+    alert("Please write something before saving!");
     return;
   }
 
-  try {
-    await fetch(api, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, comment, rating })
-    });
-    alert("Review saved!");
-    loadReviews();
-  } catch (err) {
-    console.error("Error saving review:", err);
-    alert("Failed to save review.");
+  localStorage.setItem(id + "-comment", JSON.stringify({ title, comment, poster }));
+  alert("Review saved!");
+  loadReviews();
+}
+
+function deleteComment(id) {
+  localStorage.removeItem(id + "-comment");
+  localStorage.removeItem(id + "-rating");
+  alert("Review deleted!");
+  loadReviews();
+}
+
+function loadReviews() {
+  const reviewsList = document.getElementById("reviewsList");
+  reviewsList.innerHTML = "";
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+
+    if (key.endsWith("-comment")) {
+      const stored = JSON.parse(localStorage.getItem(key));
+
+      if (stored && stored.comment) {
+        const movieId = key.replace("-comment", "");
+        const rating = localStorage.getItem(movieId + "-rating");
+        const ratingStars = rating ? getStars(rating) : "No rating";
+
+        const div = document.createElement("div");
+
+        div.style.display = "inline-block";
+        div.style.margin = "10px";
+        div.style.textAlign = "center";
+        div.style.width = "180px";
+        div.style.background = "rgba(0,0,0,0.6)";
+        div.style.padding = "10px";
+        div.style.borderRadius = "8px";
+
+        div.innerHTML = `
+          <img src="${stored.poster}" style="width:150px; border-radius:8px;"><br>
+          <b>${stored.title}</b><br>
+          <div style="color: gold; font-size: 1.2rem;">${ratingStars}</div>
+          <p>${stored.comment}</p>
+          <div class="review-buttons">
+            <button onclick="scrollToMovie('${movieId}')">Go to Movies</button>
+            <button onclick="deleteComment('${movieId}')">Delete</button>
+          </div>
+        `;
+
+        reviewsList.appendChild(div);
+      }
+    }
   }
 }
 
-// Load reviews from backend
-async function loadReviews() {
-  try {
-    const res = await fetch(api);
-    const reviews = await res.json();
-    const reviewsList = document.getElementById("reviewsList");
-    reviewsList.innerHTML = "";
+function goHome() {
+  currentPage = 1;
+  document.getElementById("searchInput").value = "";
+  showSection('moviesSection');
+  loadMovies(1);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
-    reviews.forEach(r => {
-      const ratingStars = r.rating ? "⭐".repeat(r.rating) : "No rating";
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <h3>${r.title}</h3>
-        <p>${ratingStars}</p>
-        <p>${r.comment}</p>
-      `;
-      reviewsList.appendChild(div);
-    });
-  } catch (err) {
-    console.error("Error loading reviews:", err);
+function scrollToMovie(movieId) {
+  showSection('moviesSection');
+
+  const movieElement = document.getElementById("movie-" + movieId);
+
+  if (movieElement) {
+    movieElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    movieElement.style.border = "2px solid gold";
+
+    setTimeout(() => movieElement.style.border = "", 2000);
   }
 }
 
-// Favorites
+function getStars(rating) {
+  const stars = Math.round(rating / 2);
+  const filled = "★".repeat(stars);
+  const empty = "☆".repeat(5 - stars);
+  return filled + empty;
+}
+
 function toggleFavorite(id, title, poster) {
   const favKey = id + "-favorite";
 
@@ -201,6 +253,7 @@ function toggleFavorite(id, title, poster) {
     localStorage.setItem(favKey, JSON.stringify({ title, poster }));
     alert(title + " added to favorites!");
   }
+
   loadFavorites();
 }
 
@@ -210,11 +263,13 @@ function loadFavorites() {
 
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
+
     if (key.endsWith("-favorite")) {
       const fav = JSON.parse(localStorage.getItem(key));
       const movieId = key.replace("-favorite", "");
 
       const div = document.createElement("div");
+
       div.style.display = "inline-block";
       div.style.margin = "10px";
       div.style.textAlign = "center";
@@ -226,23 +281,13 @@ function loadFavorites() {
       div.innerHTML = `
         <img src="${fav.poster}" style="width:120px; border-radius:8px;"><br>
         <b>${fav.title}</b><br>
-        <div class="favorites-buttons" style="display: flex; justify-content: space-between; margin-top: 10px; gap: 10px;">
+        <div class="favorites-buttons" style="display:flex;justify-content:space-between;margin-top:10px;gap:10px;">
           <button onclick="scrollToMovie('${movieId}')">Go to Movies</button>
           <button onclick="toggleFavorite('${movieId}','${fav.title}','${fav.poster}')">Delete</button>
         </div>
       `;
+
       favoritesList.appendChild(div);
     }
-  }
-}
-
-// Scroll helper
-function scrollToMovie(movieId) {
-  showSection('moviesSection');
-  const movieElement = document.getElementById("movie-" + movieId);
-  if (movieElement) {
-    movieElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    movieElement.style.border = "2px solid gold";
-    setTimeout(() => movieElement.style.border = "", 2000);
   }
 }
